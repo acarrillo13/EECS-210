@@ -1,61 +1,62 @@
-#partTwo.py
-def sudoku(grid, row, col):#the solver
-    if row > 8:#checking to see if we are through the whole puzzle, becuase if we have moved to an index greater than eight it means that every space has been solved
+def sudoku(grid, row, col, solutions):#solves the sudoku
+    if row > 8:
+        solutions.append([row[:] for row in grid])#copies the grid to the solutions
         return True
     if grid[row][col] == '_':#checks for empty space
         for i in range(9):
-            if check(grid, row, col, str(i+1)):
-                grid[row][col] = str(i+1)
-                if sudoku(grid, row, col):
+            if check(grid, row, col, str(i + 1)):
+                grid[row][col] = str(i + 1)
+                if sudoku(grid, row, col, solutions):
                     return True
-            grid[row][col] = '_'
-    else:#if no empty space we move over to check the next index
-        if col < 8:#if we are not at the end of a row we just add one to our col
-            return sudoku(grid, row, col+1)
-        elif col == 8:#if we are at the end of the row we go to the next row
-            return sudoku(grid, row+1, 0)        
-    return False#if we hit this it means that we have iterated through every possiblity and there are no solutions
-    
+            grid[row][col] = '_' #backtracking
+    else:#moves to next index
+        if col < 8:
+            return sudoku(grid, row, col + 1, solutions)
+        elif col == 8:
+            return sudoku(grid, row + 1, 0, solutions)
+    return False
 
-def check(grid, row, col, num):#checks all the sudoku parameters to see what numbers can be placed at a spot 
-    for i in range(9):#checks the rows for the same number
+def check(grid, row, col, num):#checks the 3 parameters for a sudoku spot
+    for i in range(9): #row check
         if grid[row][i] == num:
             return False
-    for i in range(9):#checks the colums for the same number
+        
+    for i in range(9):#col check
         if grid[i][col] == num:
             return False
-    boxrow = (row // 3) *3 #making new indeicies for our 3 x 3's 
-    boxcol = (col // 3) *3
-    for i in range(boxrow, boxrow+3):#checks the 3x3 "box" for any similar numbers
-        for j in range(boxcol, boxcol+3):
+        
+    boxrow = (row // 3) * 3
+    boxcol = (col // 3) * 3
+    for i in range(boxrow, boxrow + 3):#3x3 check
+        for j in range(boxcol, boxcol + 3):
             if grid[i][j] == num:
                 return False
-    return True#if it makes it through all the checks that number can be placed there
             
+    return True
 
 def main():
-    userin = input("Enter puzzle file: ")#user enters the puzzle file
+    solutions = []  # List to store solutions
+    userin = input("Enter puzzle file: ")#userinput for puzzle
     dafile = open(userin, 'r')
     puzzle = []
-    for i in dafile:#makes file into a 2D list to be useable by the functions
+    for i in dafile:#makes the file into an unsolved puzzle
         splitted = i.split(' ')
         splitted.pop(-1)
         puzzle.append(splitted)
-    print(userin)#prints the name of the file
-    for i in puzzle:#prints unsolved puzzle from file
-            for j in i:
-                print(j, end = ' ')
-            print('\n')
-    print('\n')
-    if sudoku(puzzle, 0, 0):#prints solved puzzle
-        for i in puzzle:
-            for j in i:
-                print(j, end = ' ')
-            print('\n')
-    else:
-        print('No solution found')#if there is no solution the program says so
-main()
+    print(userin)#prints unsolved puzzle
+    for i in puzzle:
+        for j in i:
+            print(j, end=' ')
+        print('\n')
+    sudoku(puzzle, 0, 0, solutions)#pass solutions list to the solver
+    if solutions:#prints the solutions
+        for index, solution in enumerate(solutions, start=1):
+            print(f"Solution {index}:")
+            for row in solution:
+                print(' '.join(row))
+            print()
+    else:#if solutions is empty there are no solutions 
+        print('No solution found')
+    print(f'Number of solutions: {len(solutions)}')
 
-#TO DO
-    #different solutons
-        
+main()
