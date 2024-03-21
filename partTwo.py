@@ -1,62 +1,60 @@
 def sudoku(grid, row, col, solutions):#solves the sudoku
-    if row > 8:
+    if row == 9:
         solutions.append([row[:] for row in grid])#copies the grid to the solutions
         return True
+
     if grid[row][col] == '_':#checks for empty space
-        for i in range(9):
-            if check(grid, row, col, str(i + 1)):
-                grid[row][col] = str(i + 1)
-                if sudoku(grid, row, col, solutions):
-                    return True
-            grid[row][col] = '_' #backtracking
-    else:#moves to next index
-        if col < 8:
-            return sudoku(grid, row, col + 1, solutions)
-        elif col == 8:
-            return sudoku(grid, row + 1, 0, solutions)
+        for num in range(1, 10):
+            if check(grid, row, col, str(num)):
+                grid[row][col] = str(num)
+                next_row, next_col = (row, col + 1) if col < 8 else (row + 1, 0)
+                if sudoku(grid, next_row, next_col, solutions):
+                    grid[row][col] = '_'  #backtracking
+                    continue
+                grid[row][col] = '_'  #backtracking
+    else: #moves to next row or col after checking to see if it was empty
+        next_row, next_col = (row, col + 1) if col < 8 else (row + 1, 0)
+        if sudoku(grid, next_row, next_col, solutions):
+            return True
     return False
 
-def check(grid, row, col, num):#checks the 3 parameters for a sudoku spot
-    for i in range(9): #row check
-        if grid[row][i] == num:
+def check(grid, row, col, num):#checks to see if a number fits for an empty space
+    #returns false if num is equal to something else in the row, col, or box 
+    for i in range(9):
+        if grid[row][i] == num:#checks row
             return False
-        
-    for i in range(9):#col check
-        if grid[i][col] == num:
+        if grid[i][col] == num:#checks col
             return False
-        
+    #checks 3x3 boxes
     boxrow = (row // 3) * 3
     boxcol = (col // 3) * 3
-    for i in range(boxrow, boxrow + 3):#3x3 check
+    for i in range(boxrow, boxrow + 3):
         for j in range(boxcol, boxcol + 3):
             if grid[i][j] == num:
                 return False
-            
     return True
 
 def main():
-    solutions = []  # List to store solutions
-    userin = input("Enter puzzle file: ")#userinput for puzzle
-    dafile = open(userin, 'r')
-    puzzle = []
-    for i in dafile:#makes the file into an unsolved puzzle
-        splitted = i.split(' ')
-        splitted.pop(-1)
-        puzzle.append(splitted)
-    print(userin)#prints unsolved puzzle
-    for i in puzzle:
-        for j in i:
-            print(j, end=' ')
-        print('\n')
-    sudoku(puzzle, 0, 0, solutions)#pass solutions list to the solver
-    if solutions:#prints the solutions
-        for index, solution in enumerate(solutions, start=1):
+    solutions = []#list to store solutions
+    userin = input("Enter puzzle file: ")#gets file from user
+    with open(userin, 'r') as dafile:#makes file into puzzle to be used by sudoku
+        puzzle = [line.split() for line in dafile]
+
+    print("Unsolved puzzle:")
+    for row in puzzle:#prints unsloved puzzle
+        print(' '.join(row))
+
+    sudoku(puzzle, 0, 0, solutions)#starts to solve puzzle
+
+    if solutions:#checks to see if there is something in solutions, if not it returns no solution found
+        print("\nSolutions:")
+        for index, solution in enumerate(solutions, start=1):#goes through solutions list printing each solution
             print(f"Solution {index}:")
             for row in solution:
                 print(' '.join(row))
-            print()
-    else:#if solutions is empty there are no solutions 
+            print('\n')
+    else:#no solutions in the solutions list
         print('No solution found')
-    print(f'Number of solutions: {len(solutions)}')
+    print(f'Number of solutions: {len(solutions)}')#prints total number of solutons
 
 main()
